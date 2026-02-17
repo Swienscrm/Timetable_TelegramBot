@@ -11,8 +11,9 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
+
 if BOT_TOKEN is None:
-    logging.warning("Ошибка токена бота")
+    raise RuntimeError("BOT_TOKEN не установлен")
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 dp.include_router(router)

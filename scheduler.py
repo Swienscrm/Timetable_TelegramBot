@@ -20,6 +20,9 @@ async def send_timetable_to_group(bot: Bot):
         logging.error(f"Ошибка при отправке расписания {e}")
 
 def setup_scheduler(bot:Bot):
+    if not SCHEDULE_TIME or len(SCHEDULE_TIME.split())!=5:
+        logging.error("SCHEDULE_TIME имеет неверный формат")
+        return
     scheduler.add_job(
         send_timetable_to_group,
         trigger=CronTrigger.from_crontab(SCHEDULE_TIME),
@@ -30,3 +33,4 @@ def setup_scheduler(bot:Bot):
     )
     logging.info("Планировщик настроен")
     scheduler.start()
+    

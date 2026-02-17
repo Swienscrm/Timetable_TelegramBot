@@ -6,4 +6,8 @@ load_dotenv()
 BOT_TOKEN = os.getenv("TOKEN")
 
 GROUP_CHAT_ID = os.getenv("CHAT_ID")
-SCHEDULE_TIME = os.getenv("TIME")
+
+SCHEDULE_TIME = os.getenv("TIME", "0 9 * * 1")
+
+raw_users = os.getenv("FRIENDS", "Женя,Никита,Матвей,Коля")
+USERS = [name.strip() for name in raw_users.split(",") if name.strip()]
