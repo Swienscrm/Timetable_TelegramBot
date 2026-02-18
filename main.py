@@ -3,7 +3,7 @@ from config import BOT_TOKEN
 from aiogram import Bot, Dispatcher
 import asyncio
 from handlers import router
-from scheduler import setup_scheduler, scheduler
+from scheduler import setup_scheduler, setup_everyday_scheduler, scheduler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,6 +21,7 @@ dp.include_router(router)
 async def main():
     logging.info("Bot is running...")
     setup_scheduler(bot)
+    setup_everyday_scheduler(bot)
     try:
         await dp.start_polling(bot)
     finally:
