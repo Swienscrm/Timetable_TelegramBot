@@ -3,24 +3,47 @@ from config import USERS
 import json
 from pathlib import Path
 from datetime import datetime
+from storage import load_excluded
 
 
-MAX_DAYS_PER_USER = 2
 DAYS = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"]
 
 SCHEDULE_FILE = Path("schedule.json")
 
-def generate_timetable() -> dict[str, str]:
-    user_timetable = []
-    user_days_count = {user: 0 for user in USERS}
+
+
+def get_active_user() -> list[str]:
+    excluded = load_excluded()
+    return [u for u in USERS if u not in excluded]
+
+def calc_max_day_per_user(days_count: int, user_count: int) -> int:
+    if user_count == 0:
+        return 0
+    return (days_count + user_count-1) // user_count
+
+def generate_timetable(active_users: list[str] | None = None) -> dict[str, str]:
+    if active_users is None:
+        active_users = get_active_user()
+    if not active_users:
+        raise RuntimeError("Нет активных пользователей для генерации расписания")
+
+    MAX_DAYS_PER_USER = calc_max_day_per_user(len(DAYS), len(active_users))
+    user_timetable: list[str] = []
+    user_days_count = {u: 0 for u in active_users}
+
+    max_attempts = 10_000
+    attempts = 0
 
     while len(user_timetable)<len(DAYS):
-        random_user = random.choice(USERS)
-        if user_days_count[random_user] < MAX_DAYS_PER_USER:
-            user_timetable.append(random_user)
-            user_days_count[random_user]+=1
+        attempts += 1
+        if attempts > max_attempts:
+            raise RuntimeError("Не удалость составить расписание, слишком много попыток")
+        u = random.choice(active_users)
+        if user_days_count[u] < MAX_DAYS_PER_USER:
+            user_timetable.append(u)
+            user_days_count[u]+=1
 
-    return {day: user for day, user in zip(DAYS, user_timetable)}
+    return {day: u for day, u in zip(DAYS, user_timetable)}
 
 def save_schedule(schedule: dict[str,str]) -> None:
     SCHEDULE_FILE.write_text(
