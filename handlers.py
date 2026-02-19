@@ -5,7 +5,6 @@ from config import USERS
 from schedule_service import generate_timetable_message, get_today_assignment
 from storage import toggle_user_excluded, load_excluded
 from keyboards import friends_toggle_keyboard
-from schedule_service import DAYS
 
 
 router = Router()
