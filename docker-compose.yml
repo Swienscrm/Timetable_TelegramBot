@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: timetable_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./schedule.json:/bot/schedule.json
+      - ./excluded_users.json:/bot/excluded_users.json

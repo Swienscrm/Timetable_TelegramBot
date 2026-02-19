@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.getenv("TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("Токен не найден")
 
 GROUP_CHAT_ID = int(os.getenv("CHAT_ID"))
 

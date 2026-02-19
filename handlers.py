@@ -5,6 +5,7 @@ from config import USERS
 from schedule_service import generate_timetable_message, get_today_assignment
 from storage import toggle_user_excluded, load_excluded
 from keyboards import friends_toggle_keyboard
+import logging
 
 
 router = Router()
@@ -28,6 +29,10 @@ async def today_cmd(message: Message):
 @router.message(Command("friends"))
 async def friends_cmd(message: Message):
     await message.answer("Включи или выключи друзей из расписания", reply_markup=friends_toggle_keyboard())
+
+@router.message(Command("id"))
+async def chat_id_cmd(message: Message):
+    logging.info(f"Chat ID: {message.chat.id}")
 
 @router.callback_query(lambda c: c.data and c.data.startswith("toggle_friends:"))
 async def toogle_friend_cb(callback: CallbackQuery):
