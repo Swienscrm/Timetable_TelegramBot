@@ -20,8 +20,15 @@ dp.include_router(router)
 
 async def main():
     logging.info("Bot is running...")
+
     setup_scheduler(bot)
     setup_everyday_scheduler(bot)
+    
+    scheduler.start()
+
+    for job in scheduler.get_jobs():
+        logging.info(f"Задача '{job.id}' выполниться в {job.next_run_time}")
+    
     try:
         await dp.start_polling(bot)
     finally:

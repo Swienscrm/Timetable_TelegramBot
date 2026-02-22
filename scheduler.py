@@ -5,7 +5,7 @@ from schedule_service import generate_timetable_message, get_today_assignment
 from config import GROUP_CHAT_ID, SCHEDULE_TIME_WEEK, SCHEDULE_TIME_EVERY_DAY
 import logging
 
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(timezone = "Asia/Novosibirsk")
 
 #EVERY WEEK
 async def send_timetable_to_group(bot: Bot):
@@ -24,16 +24,18 @@ def setup_scheduler(bot: Bot):
     if not SCHEDULE_TIME_WEEK or len(SCHEDULE_TIME_WEEK.split())!=5:
         logging.error("SCHEDULE_TIME_WEEK имеет неверный формат")
         return
+
+    trigger_time = CronTrigger.from_crontab(SCHEDULE_TIME_WEEK, timezone = "Asia/Novosibirsk")
+
     scheduler.add_job(
         send_timetable_to_group,
-        trigger=CronTrigger.from_crontab(SCHEDULE_TIME_WEEK),
+        trigger=trigger_time,
         args=[bot],
         id="send_timetable",
         replace_existing=True,
-        timezone="Asia/Novosibirsk"
+        misfire_grace_time = 3600
     )
     logging.info("Еженедельный планировщик настроен")
-    scheduler.start()
 
 #EVERY DAY USER
 async def send_user_everyday_to_group(bot: Bot):
@@ -51,13 +53,16 @@ def setup_everyday_scheduler(bot: Bot):
     if not SCHEDULE_TIME_EVERY_DAY or len(SCHEDULE_TIME_EVERY_DAY.split())!=5:
         logging.error("SCHEDULE_TIME_EVERY_DAY имеет неверный формат")
         return
+
+    trigger_time = CronTrigger.from_crontab(SCHEDULE_TIME_EVERY_DAY, timezone = "Asia/Novosibirsk")
+
     scheduler.add_job(
         send_user_everyday_to_group,
-        trigger=CronTrigger.from_crontab(SCHEDULE_TIME_EVERY_DAY),
+        trigger=trigger_time,
         args=[bot],
         id="send_user_timetable",
         replace_existing=True,
-        timezone="Asia/Novosibirsk"
+        misfire_grace_time = 3600
     )
     logging.info("Ежедневный планировщик настроен")
 
