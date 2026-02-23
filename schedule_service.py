@@ -9,6 +9,7 @@ from storage import load_excluded
 DAYS = ["Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"]
 
 SCHEDULE_FILE = Path("schedule.json")
+CLEANING_FILE = Path("cleaning.json")
 
 
 
@@ -29,6 +30,7 @@ def generate_timetable(active_users: list[str] | None = None) -> dict[str, str]:
 
     MAX_DAYS_PER_USER = calc_max_day_per_user(len(DAYS), len(active_users))
     user_timetable: list[str] = []
+    user_cleaning: list[str] = []
     user_days_count = {u: 0 for u in active_users}
 
     max_attempts = 10_000
@@ -42,7 +44,9 @@ def generate_timetable(active_users: list[str] | None = None) -> dict[str, str]:
         if user_days_count[u] < MAX_DAYS_PER_USER:
             user_timetable.append(u)
             user_days_count[u]+=1
-
+    
+    cleaning_users = [u for u, c in user_days_count.items() if c == 1]
+    save_cleaning(cleaning_users)
     return {day: u for day, u in zip(DAYS, user_timetable)}
 
 def save_schedule(schedule: dict[str,str]) -> None:
@@ -51,10 +55,22 @@ def save_schedule(schedule: dict[str,str]) -> None:
         encoding="utf-8"
     )
 
+def save_cleaning(users: list[str]) -> None:
+    CLEANING_FILE.write_text(
+        json.dumps(users, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
 def format_schedule_message(schedule: dict[str,str]):
     lines = ["РАСПИСАНИЕ ВЫБРОСА МУСОРА", ""]
     for day in DAYS:
         lines.append(f"{day} : {schedule[day]}")
+    cleaning = load_cleaning()
+    if cleaning:
+        lines.append("")
+        lines.append("На этой неделе пылесосит:")
+        for u in cleaning:
+            lines.append(f"{u}")
     lines.append("")
     lines.append("Вы можете генерировать новое расписание командой /timetable")
     return "\n".join(lines)
@@ -77,6 +93,15 @@ def load_schedule() -> dict[str, str] | None:
         if isinstance(k,str) and isinstance(v,str):
             schedule[k] = v
     return schedule
+
+def load_cleaning() -> list[str] | None:
+    if not CLEANING_FILE.exists():
+        return None
+    
+    data = json.loads(CLEANING_FILE.read_text(encoding="utf-8"))
+    if isinstance(data, list):
+        return [str(x) for x in data]
+    return None
 
 def get_today_assignment() -> str:
     schedule = load_schedule()

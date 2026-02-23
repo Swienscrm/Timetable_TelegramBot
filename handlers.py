@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery, Message
 from aiogram.filters import CommandStart, Command
-from config import USERS
+from config import USERS, GROUP_CHAT_ID
 from schedule_service import generate_timetable_message, get_today_assignment
 from storage import toggle_user_excluded, load_excluded
 from keyboards import friends_toggle_keyboard
@@ -12,15 +12,18 @@ router = Router()
 
 @router.message(CommandStart())
 async def start(message: Message):
-    await message.answer("Чтобы сгенерировать расписание используйте команду /timetable\n Чтобы узнать кто выносит мусор сегодня используйте команду /today\nЧтобы управлять людьми в генерации расписания /friends")
+    await message.answer("Используйте команду /timetable чтобы создать новое расписание\n\nИспользуйте команду /help чтобы увидеть подробности о каждой команде")
 
 @router.message(Command("help"))
 async def help_cmd(message: Message):
-    await message.answer("Команды:\n/timetable — новое расписание\n/friends - выключить или включить человека в расписание")
+    await message.answer("Команды:\n\n/timetable — новое расписание\n\n/friends - выключить или включить человека в расписание\n\n/today чтобы узнать кто выносит сегодня мусор.")
 
 @router.message(Command("timetable"))
 async def timetable_cmd(message: Message):
-    await message.answer(generate_timetable_message())
+    if (message.chat.id == GROUP_CHAT_ID):
+        await message.answer(generate_timetable_message())
+    else:
+        await message.answer("У вас нету прав создать новое расписание")
 
 @router.message(Command("today"))
 async def today_cmd(message: Message):
