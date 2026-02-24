@@ -1,11 +1,12 @@
 from aiogram import Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message 
 from aiogram.filters import CommandStart, Command
 from config import USERS, GROUP_CHAT_ID
 from schedule_service import generate_timetable_message, get_today_assignment
 from storage import toggle_user_excluded, load_excluded
 from keyboards import friends_toggle_keyboard
 import logging
+from storage import load_last_id_message_everyday, save_last_id_message_everyday
 
 
 router = Router()
@@ -20,14 +21,23 @@ async def help_cmd(message: Message):
 
 @router.message(Command("timetable"))
 async def timetable_cmd(message: Message):
-    if (message.chat.id == GROUP_CHAT_ID):
-        await message.answer(generate_timetable_message())
-    else:
-        await message.answer("У вас нету прав создать новое расписание")
+    # if (message.chat.id == GROUP_CHAT_ID):
+    #     await message.answer(generate_timetable_message())
+    # else:
+    #     await message.answer("У вас нету прав создать новое расписание")
+    await message.answer(generate_timetable_message())
 
 @router.message(Command("today"))
 async def today_cmd(message: Message):
-    await message.answer(get_today_assignment())
+    last_id = load_last_id_message_everyday()
+    if last_id:
+        try:
+            await message.bot.delete_message(chat_id=GROUP_CHAT_ID,message_id=last_id)
+            logging.info("Предыдущее уведомлениее удалено")
+        except Exception as e:
+            logging.warning(f"Не удалось удалить предыдущее сообщение {e}")
+    msg = await message.answer(get_today_assignment())
+    save_last_id_message_everyday(msg.message_id)
 
 @router.message(Command("friends"))
 async def friends_cmd(message: Message):

@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 EXCLUDED_FILE = Path("excluded_users.json")
+REMINDER_LAST_ID_MESSAGE = Path("reminder_last_id_message.json")
 
 def load_excluded() -> set[str]:
     if not EXCLUDED_FILE.exists():
@@ -23,6 +24,8 @@ def save_excluded(excluded: set[str]) -> None:
         encoding="utf-8"
     )
 
+
+
 def toggle_user_excluded(user: str) -> set[str]:
     excluded = load_excluded()
     if user in excluded:
@@ -31,3 +34,15 @@ def toggle_user_excluded(user: str) -> set[str]:
         excluded.add(user)
     save_excluded(excluded)
     return excluded
+
+
+def save_last_id_message_everyday(msg_id: int):
+    with open(REMINDER_LAST_ID_MESSAGE, "w") as f:
+        json.dump({"last_id": msg_id}, f)
+
+def load_last_id_message_everyday() -> int:
+    try:
+        with open(REMINDER_LAST_ID_MESSAGE) as f:
+            return json.load(f).get("last_id")
+    except FileNotFoundError:
+        return None

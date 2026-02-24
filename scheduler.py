@@ -4,6 +4,7 @@ from aiogram import Bot
 from schedule_service import generate_timetable_message, get_today_assignment
 from config import GROUP_CHAT_ID, SCHEDULE_TIME_WEEK, SCHEDULE_TIME_EVERY_DAY
 import logging
+from storage import load_last_id_message_everyday, save_last_id_message_everyday
 
 scheduler = AsyncIOScheduler(timezone = "Asia/Novosibirsk")
 
@@ -43,8 +44,23 @@ async def send_user_everyday_to_group(bot: Bot):
         if GROUP_CHAT_ID is None:
             logging.warning("id чата не установлен")
             return
+        
+        last_id = load_last_id_message_everyday()
+        if last_id:
+            try:
+                await bot.delete_message(chat_id=GROUP_CHAT_ID, message_id=last_id)
+                logging.info("Вчерашнее напоминание удалено")
+            except Exception as e:
+                logging.warning(f"Не удалось удалить вчерашнее напоминание : {e}")
+
+
+
+
         user_today_message = get_today_assignment()
-        await bot.send_message(chat_id=GROUP_CHAT_ID, text=user_today_message)
+        msg = await bot.send_message(chat_id=GROUP_CHAT_ID, text=user_today_message)
+
+        save_last_id_message_everyday(msg.message_id)
+
         logging.info("Ежедневное сообщение отправлено в чат")
     except Exception as e:
         logging.error(f"Ошибка при отправлке ежедневного сообщения {e}")
