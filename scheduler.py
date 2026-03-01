@@ -5,6 +5,7 @@ from schedule_service import generate_timetable_message, get_today_assignment
 from config import GROUP_CHAT_ID, SCHEDULE_TIME_WEEK, SCHEDULE_TIME_EVERY_DAY
 import logging
 from storage import load_last_id_message_everyday, save_last_id_message_everyday
+from weather import get_weather
 
 scheduler = AsyncIOScheduler(timezone = "Asia/Novosibirsk")
 
@@ -52,11 +53,7 @@ async def send_user_everyday_to_group(bot: Bot):
                 logging.info("Вчерашнее напоминание удалено")
             except Exception as e:
                 logging.warning(f"Не удалось удалить вчерашнее напоминание : {e}")
-
-
-
-
-        user_today_message = get_today_assignment()
+        user_today_message = get_today_assignment() + "\n\n" + get_weather()
         msg = await bot.send_message(chat_id=GROUP_CHAT_ID, text=user_today_message)
 
         save_last_id_message_everyday(msg.message_id)

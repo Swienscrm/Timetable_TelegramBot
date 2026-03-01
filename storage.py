@@ -40,9 +40,15 @@ def save_last_id_message_everyday(msg_id: int):
     with open(REMINDER_LAST_ID_MESSAGE, "w") as f:
         json.dump({"last_id": msg_id}, f)
 
-def load_last_id_message_everyday() -> int:
+def load_last_id_message_everyday() -> int | None:
+    if not REMINDER_LAST_ID_MESSAGE.exists():
+        return None
+
     try:
-        with open(REMINDER_LAST_ID_MESSAGE) as f:
-            return json.load(f).get("last_id")
-    except FileNotFoundError:
+        content = REMINDER_LAST_ID_MESSAGE.read_text(encoding="utf-8").strip()
+        if not content:
+            return None
+        data = json.loads(content)
+        return data.get("last_id")
+    except json.JSONDecodeError:
         return None
